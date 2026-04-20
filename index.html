@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terminal</title>
+    <title>Terminal Dual Pane</title>
     <style>
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             height: 100vh;
             width: 100vw;
@@ -17,14 +13,19 @@
             background: #000;
             font-family: 'Courier New', 'Consolas', monospace;
         }
-        body {
-            font-size: 20px;  /* BIGGER FONT FOR CHROMEBOOK */
-            line-height: 1.2;
-            padding: 20px;
-        }
-        #terminal {
-            width: 100vw;
+        .container {
+            display: flex;
             height: 100vh;
+            width: 100vw;
+        }
+        .pane {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+        .terminal {
+            height: 100%;
+            width: 100%;
             padding: 25px;
             overflow-y: auto;
             overflow-x: hidden;
@@ -35,15 +36,27 @@
                 radial-gradient(circle at 80% 70%, rgba(0,255,65,0.12) 0%, transparent 30%),
                 #000;
             box-shadow: inset 0 0 80px rgba(0,255,65,0.22);
-            border: 3px solid #00aa33;
+            border-right: 3px solid #00aa33;
             box-sizing: border-box;
-            position: relative;
+        }
+        .tab-pane {
+            padding: 25px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            white-space: pre-wrap;
+            background: 
+                radial-gradient(circle at 30% 20%, rgba(0,200,100,0.12) 0%, transparent 30%),
+                radial-gradient(circle at 70% 80%, rgba(0,200,100,0.1) 0%, transparent 30%),
+                #000;
+            box-shadow: inset 0 0 60px rgba(0,200,100,0.18);
+            box-sizing: border-box;
         }
         .prompt {
             color: #00ff41;
             text-shadow: 0 0 15px #00ff41;
             letter-spacing: 1px;
             font-weight: bold;
+            font-size: 20px;
         }
         .prompt::after {
             content: '_';
@@ -55,6 +68,7 @@
             color: #00cc33; 
             margin-left: 15px;
             text-shadow: 0 0 5px #00cc33;
+            font-size: 18px;
         }
         .header { 
             color: #66ff99; 
@@ -62,117 +76,120 @@
             text-shadow: 0 0 12px #66ff99;
             font-size: 22px;
         }
-        .file { 
-            color: #99ffcc; 
-            font-weight: 600;
-        }
-        .size { 
-            color: #00ff88; 
+        .file { color: #99ffcc; font-weight: 600; }
+        .size { color: #00ff88; font-weight: bold; }
+        .time { color: #33ff77; }
+        .tab-header {
+            color: #00cc66;
             font-weight: bold;
+            text-shadow: 0 0 10px #00cc66;
+            font-size: 20px;
+            margin-bottom: 15px;
         }
-        .time { 
-            color: #33ff77; 
+        .tab-output {
+            color: #66ffaa;
+            margin-left: 10px;
+            font-size: 18px;
         }
         @keyframes blink {
             0%, 50% { opacity: 1; }
             51%, 100% { opacity: 0; }
         }
         @keyframes glowPulse {
-            0%, 100% { 
-                box-shadow: inset 0 0 80px rgba(0,255,65,0.22),
-                            0 0 40px rgba(0,255,65,0.3);
-            }
-            50% { 
-                box-shadow: inset 0 0 100px rgba(0,255,65,0.3),
-                            0 0 60px rgba(0,255,65,0.5);
-            }
+            0%, 100% { box-shadow: inset 0 0 80px rgba(0,255,65,0.22); }
+            50% { box-shadow: inset 0 0 100px rgba(0,255,65,0.3); }
         }
-        #terminal {
-            animation: glowPulse 2.5s ease-in-out infinite;
+        @keyframes glowPulse2 {
+            0%, 100% { box-shadow: inset 0 0 60px rgba(0,200,100,0.18); }
+            50% { box-shadow: inset 0 0 80px rgba(0,200,100,0.25); }
         }
+        .terminal { animation: glowPulse 2.5s ease-in-out infinite; }
+        .tab-pane { animation: glowPulse2 3s ease-in-out infinite reverse; }
     </style>
 </head>
 <body>
-    <div id="terminal"></div>
+    <div class="container">
+        <div class="pane">
+            <div id="terminal-left" class="terminal"></div>
+        </div>
+        <div class="pane">
+            <div id="tab-pane" class="tab-pane">
+                <div id="tab-content"></div>
+            </div>
+        </div>
+    </div>
     
     <script>
-        const terminal = document.getElementById('terminal');
-        const commands = [
-            'dir /s', 'dir *.exe', 'dir /s /b', 'dir /a',
-            'ls -la', 'ls -R', 'ls *.log -lh',
-            'tree /f', 'tree -d -L 2',
-            'find . -name "*.txt"', 'findstr /s "*.exe"',
-            'du -sh *', 'dirsize'
-        ];
-        const prompts = [
-            'C:\\>', 'D:\\>', 'C:\\Users>', 'C:\\Windows\\System32>',
-            '/home>', '/var>', '/tmp>', '/usr/bin>',
-            'PS C:\\Users>', 'PS D:\\>', 'user@chromebook:~$'
-        ];
-
+        const termLeft = document.getElementById('terminal-left');
+        const tabContent = document.getElementById('tab-content');
+        
+        const commands = ['dir /s', 'dir *.exe', 'ls -la', 'tree /f', 'find . -name "*"', 'du -sh'];
+        const prompts = ['C:\\>', 'D:\\>', 'C:\\Users>', '/home>', 'PS C:\\>', 'user@host:~$'];
+        
+        const tabCommands = ['netstat -an', 'tasklist', 'ps aux', 'top', 'wmic process', 'systeminfo'];
+        
         function randomFile() {
-            const exts = ['.txt','.log','.exe','.dll','.sys','.cfg','.ini','.tmp','.bak','.dat'];
-            const names = ['file','sys','log','cfg','tmp','data','doc','cache','temp','backup'];
-            return `${names[Math.floor(Math.random()*names.length)]}${Math.floor(Math.random()*9999)}${exts[Math.floor(Math.random()*exts.length)]}`;
+            const exts = ['.txt','.exe','.dll','.sys','.log','.cfg'];
+            return `file${Math.floor(Math.random()*9999)}${exts[Math.floor(Math.random()*exts.length)]}`;
         }
-
-        function randomSize() {
-            return (Math.floor(Math.random()*99999999)).toLocaleString();
-        }
-
+        
+        function randomSize() { return (Math.floor(Math.random()*9999999)).toLocaleString(); }
         function randomTime() {
             const d = new Date(Date.now() - Math.random()*8640000000);
-            return d.toLocaleString('en-US', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+            return d.toLocaleString('en-US', {month:'short', day:'numeric', hour:'2-digit'});
         }
-
-        function generateOutput(cmd) {
-            let output = '';
-            
-            if (cmd.includes('dir') || cmd.includes('ls')) {
-                output += `<span class="header">Directory listing</span>\n`;
-                const files = 4 + Math.floor(Math.random()*7);
-                for (let i = 0; i < files; i++) {
-                    output += `  <span class="file">${randomFile()}</span> <span class="size">${randomSize()}</span> <span class="time">${randomTime()}</span>\n`;
-                }
-                output += `<span class="output">Total ${files} items</span>\n\n`;
-            } else if (cmd.includes('tree')) {
-                output += `<span class="header">TREE structure</span>\n`;
-                output += `📁 ${Math.random().toString(36).substr(2,6).toUpperCase()}\n`;
-                output += `  📄 ${randomFile()}\n`;
-                output += `  📁 subfolder\n`;
-                output += `    📄 ${randomFile()}\n`;
-            } else {
-                for (let i = 0; i < 5; i++) {
-                    output += `<span class="output">${randomFile()} ${randomSize()}</span>\n`;
-                }
-            }
-            
-            return output;
-        }
-
-        function addLine() {
+        
+        function addTerminalLine() {
             const prompt = prompts[Math.floor(Math.random()*prompts.length)];
             const cmd = commands[Math.floor(Math.random()*commands.length)];
             
-            terminal.innerHTML += `<span class="prompt">${prompt} ${cmd}</span>\n`;
-            terminal.innerHTML += generateOutput(cmd);
+            termLeft.innerHTML += `<span class="prompt">${prompt} ${cmd}</span>\n`;
+            termLeft.innerHTML += `<span class="header">Directory scan...</span>\n`;
+            for (let i = 0; i < 3; i++) {
+                termLeft.innerHTML += `  <span class="file">${randomFile()}</span> <span class="size">${randomSize()}</span> <span class="time">${randomTime()}</span>\n`;
+            }
+            termLeft.innerHTML += '\n';
+            termLeft.scrollTop = termLeft.scrollHeight;
+        }
+        
+        function addTabLine() {
+            const tabCmd = tabCommands[Math.floor(Math.random()*tabCommands.length)];
+            tabContent.innerHTML += `<span class="tab-header">${tabCmd}</span>\n`;
             
-            terminal.scrollTop = terminal.scrollHeight;
+            if (tabCmd.includes('netstat') || tabCmd.includes('tasklist')) {
+                for (let i = 0; i < 4; i++) {
+                    tabContent.innerHTML += `<span class="tab-output">PID: ${Math.floor(Math.random()*9999)} ${randomFile()} ${Math.floor(Math.random()*9999)} </span>\n`;
+                }
+            } else {
+                for (let i = 0; i < 5; i++) {
+                    tabContent.innerHTML += `<span class="tab-output">${randomFile()} ${randomSize()} CPU:${Math.floor(Math.random()*100)}%</span>\n`;
+                }
+            }
+            tabContent.innerHTML += '\n';
+            tabContent.scrollTop = tabContent.scrollHeight;
         }
-
-        // Chromebook optimized timing
-        let delay = 350;
-        function spamLoop() {
-            addLine();
-            delay = 280 + Math.random() * 450;
-            setTimeout(spamLoop, delay);
+        
+        // Dual pane spam
+        let leftDelay = 400, rightDelay = 600;
+        function spamLeft() {
+            addTerminalLine();
+            leftDelay = 350 + Math.random() * 400;
+            setTimeout(spamLeft, leftDelay);
         }
-
-        // Fast start burst for Chromebook
-        for (let i = 0; i < 15; i++) {
-            setTimeout(addLine, i * 150);
+        function spamRight() {
+            addTabLine();
+            rightDelay = 500 + Math.random() * 600;
+            setTimeout(spamRight, rightDelay);
         }
-        setTimeout(spamLoop, 2800);
+        
+        // Initial burst
+        for (let i = 0; i < 10; i++) {
+            setTimeout(addTerminalLine, i * 200);
+            setTimeout(addTabLine, i * 300);
+        }
+        
+        setTimeout(spamLeft, 2500);
+        setTimeout(spamRight, 3500);
     </script>
 </body>
 </html>
