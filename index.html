@@ -1,65 +1,197 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Full Terminal</title>
+<title>Dashboard Terminal</title>
 
 <style>
 html, body {
   margin: 0;
-  padding: 0;
   height: 100%;
-  background: black;
+  background: #000;
   font-family: monospace;
-  overflow: hidden; /* no manual scroll */
+  overflow: hidden;
+  color: #00ff00;
 }
 
-#terminal {
-  color: #00ff00;
-  font-size: 14px;
-  line-height: 1.3;
+/* TOP TABS */
+#tabs {
+  display: flex;
+  background: #0a0a0a;
+  border-bottom: 1px solid #00ff00;
+}
+
+.tab {
+  padding: 10px 20px;
+  cursor: pointer;
+  border-right: 1px solid #003300;
+}
+
+.tab:hover {
+  background: #003300;
+}
+
+/* MAIN LAYOUT */
+#main {
+  display: flex;
+  height: calc(100vh - 40px);
+}
+
+/* LEFT COLUMN */
+#left {
+  width: 30%;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #003300;
+}
+
+/* PROFILE BOX */
+#profile {
+  height: 25%;
+  border-bottom: 1px solid #003300;
   padding: 10px;
-  width: 100vw;
-  height: 100vh;   /* FULL SCREEN */
+}
+
+.avatar {
+  font-size: 40px;
+  margin-top: 10px;
+}
+
+/* TERMINAL BOX */
+#terminal {
+  height: 75%;
+  padding: 10px;
   overflow: hidden;
   white-space: pre-wrap;
+  font-size: 13px;
+}
+
+/* MIDDLE */
+#middle {
+  width: 35%;
+  border-right: 1px solid #003300;
+  padding: 10px;
+}
+
+/* RIGHT */
+#right {
+  width: 35%;
+  padding: 10px;
+}
+
+/* BOX STYLE */
+.box {
+  border: 1px solid #003300;
+  padding: 10px;
+  margin-bottom: 10px;
+  height: 100%;
+  overflow: hidden;
 }
 </style>
 </head>
 
 <body>
 
-<div id="terminal"></div>
+<!-- TOP TABS -->
+<div id="tabs">
+  <div class="tab">Dashboard</div>
+  <div class="tab">System</div>
+  <div class="tab">Logs</div>
+</div>
+
+<!-- MAIN AREA -->
+<div id="main">
+
+  <!-- LEFT -->
+  <div id="left">
+
+    <div id="profile" class="box">
+      👤 PROFILE
+      <div class="avatar">❓</div>
+      <div>Status: ACTIVE</div>
+    </div>
+
+    <div id="terminal" class="box"></div>
+
+  </div>
+
+  <!-- MIDDLE -->
+  <div id="middle">
+    <div class="box" id="stats">
+      📊 SYSTEM STATS<br><br>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div id="right">
+    <div class="box" id="logs">
+      ⚙️ LIVE ACTIVITY<br><br>
+    </div>
+  </div>
+
+</div>
 
 <script>
+// TERMINAL (LEFT BOTTOM)
 const terminal = document.getElementById("terminal");
 
-function line() {
+function termLine() {
   const items = [
     "C:\\System\\file_" + Math.floor(Math.random()*99999),
-    "C:\\Users\\data_" + Math.floor(Math.random()*99999),
-    "Scanning disk...",
-    "Reading sectors...",
-    "dir /s processing...",
-    "Indexing system files...",
+    "dir /s scanning...",
+    "Loading modules...",
+    "Indexing files...",
     "Memory check OK",
-    "Loading kernel modules..."
+    "Kernel running..."
+  ];
+  return items[Math.floor(Math.random()*items.length)];
+}
+
+function runTerminal() {
+  terminal.innerHTML += termLine() + "\n";
+  terminal.scrollTop = terminal.scrollHeight;
+  setTimeout(runTerminal, 20);
+}
+
+runTerminal();
+
+
+// MIDDLE STATS
+const stats = document.getElementById("stats");
+
+function updateStats() {
+  stats.innerHTML = `
+📊 SYSTEM STATS<br><br>
+CPU: ${Math.floor(Math.random()*100)}%<br>
+RAM: ${Math.floor(Math.random()*100)}%<br>
+GPU: ${Math.floor(Math.random()*100)}%<br>
+NETWORK: ${Math.floor(Math.random()*1000)} Mbps<br>
+STATUS: STABLE
+`;
+}
+
+setInterval(updateStats, 500);
+
+
+// RIGHT LOGS
+const logs = document.getElementById("logs");
+
+function logLine() {
+  const msgs = [
+    "User activity detected",
+    "Background process running",
+    "Syncing data...",
+    "No threats found",
+    "System optimized"
   ];
 
-  return items[Math.floor(Math.random() * items.length)];
+  logs.innerHTML += msgs[Math.floor(Math.random()*msgs.length)] + "<br>";
+  logs.scrollTop = logs.scrollHeight;
 }
 
-function run() {
-  terminal.innerHTML += line() + "\n";
+setInterval(logLine, 800);
 
-  // FORCE auto bottom (no scrolling needed)
-  terminal.scrollTop = terminal.scrollHeight;
-
-  // fast infinite loop
-  setTimeout(run, 5);
-}
-
-run();
 </script>
 
 </body>
 </html>
+
