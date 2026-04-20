@@ -17,17 +17,6 @@ html, body {
   font-size: 16px;
   white-space: pre-wrap;
 }
-
-.cursor {
-  display: inline-block;
-  width: 10px;
-  background: #00ff00;
-  animation: blink 1s infinite;
-}
-
-@keyframes blink {
-  50% { opacity: 0; }
-}
 </style>
 </head>
 
@@ -38,34 +27,32 @@ html, body {
 <script>
 const terminal = document.getElementById("terminal");
 
-const text = [
-"C:\\Users> dir /s",
-"",
-"Scanning system...",
-"Loading files...",
-"",
-"C:\\Windows\\System32",
-"C:\\Users\\Documents",
-"C:\\Program Files",
-"",
-"Done.",
-"C:\\Users>"
-];
+function generateLine() {
+  const fakePaths = [
+    "C:\\Windows\\System32\\file_" + Math.floor(Math.random()*9999),
+    "C:\\Users\\User\\Documents\\log_" + Math.floor(Math.random()*9999),
+    "C:\\Program Files\\app_" + Math.floor(Math.random()*9999),
+    "Scanning...",
+    "Indexing files...",
+    "dir /s running..."
+  ];
 
-let i = 0;
-
-function printLine() {
-  if (i < text.length) {
-    terminal.innerHTML += text[i] + "\n";
-    i++;
-    setTimeout(printLine, 300);
-  } else {
-    terminal.innerHTML += "█<span class='cursor'></span>";
-  }
+  return fakePaths[Math.floor(Math.random() * fakePaths.length)];
 }
 
-printLine();
+function spamTerminal() {
+  terminal.innerHTML += generateLine() + "\n";
+
+  // auto scroll effect (feels alive)
+  window.scrollTo(0, document.body.scrollHeight);
+
+  // VERY FAST loop
+  setTimeout(spamTerminal, 10);
+}
+
+spamTerminal();
 </script>
 
 </body>
 </html>
+
