@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Terminal</title>
+<title>Full Terminal</title>
+
 <style>
 html, body {
   margin: 0;
+  padding: 0;
   height: 100%;
   background: black;
   font-family: monospace;
-  overflow: hidden;
+  overflow: hidden; /* no manual scroll */
 }
 
 #terminal {
   color: #00ff00;
-  padding: 20px;
-  font-size: 16px;
+  font-size: 14px;
+  line-height: 1.3;
+  padding: 10px;
+  width: 100vw;
+  height: 100vh;   /* FULL SCREEN */
+  overflow: hidden;
   white-space: pre-wrap;
 }
 </style>
@@ -27,32 +33,33 @@ html, body {
 <script>
 const terminal = document.getElementById("terminal");
 
-function generateLine() {
-  const fakePaths = [
-    "C:\\Windows\\System32\\file_" + Math.floor(Math.random()*9999),
-    "C:\\Users\\User\\Documents\\log_" + Math.floor(Math.random()*9999),
-    "C:\\Program Files\\app_" + Math.floor(Math.random()*9999),
-    "Scanning...",
-    "Indexing files...",
-    "dir /s running..."
+function line() {
+  const items = [
+    "C:\\System\\file_" + Math.floor(Math.random()*99999),
+    "C:\\Users\\data_" + Math.floor(Math.random()*99999),
+    "Scanning disk...",
+    "Reading sectors...",
+    "dir /s processing...",
+    "Indexing system files...",
+    "Memory check OK",
+    "Loading kernel modules..."
   ];
 
-  return fakePaths[Math.floor(Math.random() * fakePaths.length)];
+  return items[Math.floor(Math.random() * items.length)];
 }
 
-function spamTerminal() {
-  terminal.innerHTML += generateLine() + "\n";
+function run() {
+  terminal.innerHTML += line() + "\n";
 
-  // auto scroll effect (feels alive)
-  window.scrollTo(0, document.body.scrollHeight);
+  // FORCE auto bottom (no scrolling needed)
+  terminal.scrollTop = terminal.scrollHeight;
 
-  // VERY FAST loop
-  setTimeout(spamTerminal, 10);
+  // fast infinite loop
+  setTimeout(run, 5);
 }
 
-spamTerminal();
+run();
 </script>
 
 </body>
 </html>
-
