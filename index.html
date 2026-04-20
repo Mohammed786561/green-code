@@ -2,146 +2,123 @@
 <html>
 <head>
 <style>
-body { margin: 0; background: #000; overflow: hidden; }
+body { 
+    margin: 0; 
+    background: #000; 
+    overflow: hidden; 
+    font-family: 'Courier New', monospace; 
+}
 #matrix {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    font-family: 'Courier New', monospace;
-    font-size: 14px;
+    top: 0; left: 0; 
+    width: 100%; height: 100%; 
+    font-size: 13px;
     color: lime;
     line-height: 1;
     white-space: pre;
-    animation: matrixFall linear infinite;
 }
-@keyframes matrixFall {
-    0% { transform: translateY(-100vh); }
-    100% { transform: translateY(100vh); }
-}
-.rain-column {
+.column {
     position: absolute;
+    animation: fall linear infinite;
     white-space: pre;
-    animation-duration: 8s;
-    animation-timing-function: linear;
-    animation-iteration-count: infinite;
 }
 .char {
     display: block;
-    opacity: 0.8;
-    animation: fadeGlow 1s ease-in-out infinite alternate;
+    opacity: 0.7;
+    animation: glow 1.5s ease-in-out infinite alternate;
 }
-@keyframes fadeGlow {
-    0% { opacity: 0.3; text-shadow: 0 0 5px lime; }
-    100% { opacity: 1; text-shadow: 0 0 20px lime; }
+@keyframes fall {
+    0% { transform: translateY(-100vh); }
+    100% { transform: translateY(100vh); }
 }
-#status {
-    position: fixed; bottom: 10px; left: 10px;
-    color: lime; font-size: 16px; z-index: 100;
+@keyframes glow {
+    0% { opacity: 0.4; text-shadow: 0 0 5px lime; }
+    100% { opacity: 1; text-shadow: 0 0 15px lime; }
 }
 </style>
 </head>
 <body>
 
 <div id="matrix"></div>
-<div id="status">🔥 INFINITE MOVING GREEN MATRIX SPAM - NON-STOP PROCESSING 🔥<br>Columns: <span id="colCount">0</span> | Speed: MAX</div>
 
 <script>
-const symbols = "01{}[]()+-*/=<>!&|~^%$#@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789€£¥§¶";
-const cols = 120;
-const colCountEl = document.getElementById('colCount');
-let activeColumns = 0;
+const codeSymbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_(){}[]+-*/=<>!&|~^%$#@:;,.";
+const keywords = ["def","class","if","for","while","try","import","from","return","print","function","var","let","const","async","await","static","public","private","void","int","float","string","bool","list","array","dict","map","set","get","post","put","delete"];
+
+function randomCodeLine() {
+    const parts = [];
+    const len = 20 + Math.floor(Math.random() * 40);
+    
+    for (let i = 0; i < len; i++) {
+        if (Math.random() < 0.15 && parts.length > 0) {
+            parts.push("()");
+        } else if (Math.random() < 0.12) {
+            parts.push("[]");
+        } else if (Math.random() < 0.1) {
+            parts.push("{}");
+        } else if (Math.random() < 0.08 && i > 5) {
+            parts.push("=");
+        } else if (Math.random() < 0.05) {
+            parts.push(keywords[Math.floor(Math.random() * keywords.length)]);
+        } else {
+            parts.push(codeSymbols[Math.floor(Math.random() * codeSymbols.length)]);
+        }
+    }
+    return parts.join("");
+}
 
 function createColumn() {
     const col = document.createElement('div');
-    col.className = 'rain-column';
-    col.style.left = Math.random() * 100 + '%';
-    col.style.animationDuration = (6 + Math.random() * 4) + 's';
-    col.style.fontSize = (10 + Math.random() * 6) + 'px';
+    col.className = 'column';
+    col.style.left = (Math.random() * 95) + '%';
+    col.style.animationDuration = (5 + Math.random() * 5) + 's';
+    col.style.fontSize = (11 + Math.random() * 4) + 'px';
     
-    const drops = Math.floor(40 + Math.random() * 30);
-    for (let i = 0; i < drops; i++) {
-        const char = document.createElement('span');
-        char.className = 'char';
-        char.textContent = symbols[Math.floor(Math.random() * symbols.length)];
-        char.style.animationDelay = (i * 0.1) + 's';
-        col.appendChild(char);
+    const chars = 30 + Math.floor(Math.random() * 25);
+    for (let i = 0; i < chars; i++) {
+        const ch = document.createElement('span');
+        ch.className = 'char';
+        ch.textContent = randomCodeLine().slice(0, 1 + Math.floor(Math.random() * 3));
+        ch.style.animationDelay = (i * 0.08) + 's';
+        col.appendChild(ch);
     }
     
     document.getElementById('matrix').appendChild(col);
-    activeColumns++;
-    colCountEl.textContent = activeColumns;
     
-    // Remove after animation
     setTimeout(() => {
-        if (col.parentNode) col.parentNode.removeChild(col);
-        activeColumns--;
-        colCountEl.textContent = activeColumns;
+        if (col.parentNode) {
+            col.parentNode.removeChild(col);
+        }
     }, 12000);
 }
 
-// Spawn new columns continuously
-setInterval(createColumn, 200);
+// Continuous infinite spawning
+setInterval(createColumn, 80);
 
-// Initial burst
-for (let i = 0; i < 20; i++) {
-    setTimeout(createColumn, i * 100);
+// Initial burst for instant effect
+for (let i = 0; i < 30; i++) {
+    setTimeout(createColumn, i * 50);
 }
 
-// Hacker commands overlay (also falling)
-const commands = ["nmap -sS 192.168.1.0/24", "msfvenom -p windows/meterpreter", "hydra -l admin", "sqlmap -u target.com", "aircrack-ng capture.cap", "hashcat -m 0 hashes.txt"];
+// Extra fast columns
 setInterval(() => {
-    const cmdCol = document.createElement('div');
-    cmdCol.className = 'rain-column';
-    cmdCol.style.left = Math.random() * 100 + '%';
-    cmdCol.style.color = '#00FF00';
-    cmdCol.style.fontSize = '16px';
-    cmdCol.style.fontWeight = 'bold';
-    cmdCol.style.animationDuration = '10s';
-    cmdCol.textContent = commands[Math.floor(Math.random() * commands.length)];
-    document.getElementById('matrix').appendChild(cmdCol);
+    createColumn();
+}, 120);
+
+// Longer code lines occasionally
+setInterval(() => {
+    const longCol = document.createElement('div');
+    longCol.className = 'column';
+    longCol.style.left = (Math.random() * 95) + '%';
+    longCol.style.animationDuration = '8s';
+    longCol.style.fontSize = '12px';
+    longCol.textContent = randomCodeLine();
+    document.getElementById('matrix').appendChild(longCol);
     
     setTimeout(() => {
-        if (cmdCol.parentNode) cmdCol.parentNode.removeChild(cmdCol);
-    }, 10000);
-}, 1500);
-
-// Progress bars falling
-setInterval(() => {
-    const prog = document.createElement('div');
-    prog.className = 'rain-column';
-    prog.style.left = Math.random() * 100 + '%';
-    prog.style.color = '#00FF00';
-    prog.style.fontSize = '12px';
-    prog.style.animationDuration = '7s';
-    const percent = Math.floor(Math.random() * 100);
-    prog.textContent = `HACK_PROGRESS: ${percent}% █${'█'.repeat(percent/5)}${'░'.repeat((100-percent)/5)}`;
-    document.getElementById('matrix').appendChild(prog);
-    
-    setTimeout(() => {
-        if (prog.parentNode) prog.parentNode.removeChild(prog);
-    }, 7000);
-}, 800);
-
-// Binary rain columns
-setInterval(() => {
-    const binCol = document.createElement('div');
-    binCol.className = 'rain-column';
-    binCol.style.left = Math.random() * 100 + '%';
-    binCol.style.color = '#00AA00';
-    binCol.style.fontSize = '10px';
-    binCol.style.animationDuration = '12s';
-    
-    for (let i = 0; i < 60; i++) {
-        const bit = document.createElement('span');
-        bit.textContent = Math.random() > 0.5 ? '1' : '0';
-        bit.style.display = 'block';
-        binCol.appendChild(bit);
-    }
-    
-    document.getElementById('matrix').appendChild(binCol);
+        if (longCol.parentNode) longCol.parentNode.removeChild(longCol);
+    }, 8000);
 }, 300);
-
-console.log("🚀 INFINITE MOVING GREEN MATRIX RAIN - FULLSCREEN HACKER MODE ACTIVATED 🚀");
-console.log("💚 Text continuously falls FOREVER - refresh to restart 💚");
 </script>
 
 </body>
