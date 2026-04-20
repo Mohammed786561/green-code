@@ -1,197 +1,139 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Dashboard Terminal</title>
+<title>System Grid Terminal</title>
 
 <style>
 html, body {
   margin: 0;
   height: 100%;
-  background: #000;
+  background: black;
   font-family: monospace;
-  overflow: hidden;
   color: #00ff00;
+  overflow: hidden;
 }
 
-/* TOP TABS */
-#tabs {
+/* TOP BAR */
+#top {
+  height: 40px;
   display: flex;
-  background: #0a0a0a;
-  border-bottom: 1px solid #00ff00;
+  border-bottom: 1px solid #003300;
 }
 
 .tab {
   padding: 10px 20px;
-  cursor: pointer;
   border-right: 1px solid #003300;
 }
 
-.tab:hover {
-  background: #003300;
-}
-
-/* MAIN LAYOUT */
+/* MAIN GRID */
 #main {
   display: flex;
   height: calc(100vh - 40px);
 }
 
-/* LEFT COLUMN */
-#left {
-  width: 30%;
-  display: flex;
-  flex-direction: column;
+/* ALL BOXES SAME SIZE */
+.box {
+  flex: 1;
   border-right: 1px solid #003300;
-}
-
-/* PROFILE BOX */
-#profile {
-  height: 25%;
-  border-bottom: 1px solid #003300;
-  padding: 10px;
-}
-
-.avatar {
-  font-size: 40px;
-  margin-top: 10px;
-}
-
-/* TERMINAL BOX */
-#terminal {
-  height: 75%;
   padding: 10px;
   overflow: hidden;
   white-space: pre-wrap;
   font-size: 13px;
 }
 
-/* MIDDLE */
-#middle {
-  width: 35%;
-  border-right: 1px solid #003300;
-  padding: 10px;
-}
-
-/* RIGHT */
-#right {
-  width: 35%;
-  padding: 10px;
-}
-
-/* BOX STYLE */
-.box {
-  border: 1px solid #003300;
-  padding: 10px;
-  margin-bottom: 10px;
-  height: 100%;
-  overflow: hidden;
+/* PROFILE AVATAR (proper circle with dots) */
+.avatar {
+  width: 60px;
+  height: 60px;
+  border: 2px dotted #00ff00;
+  border-radius: 50%;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
 </head>
 
 <body>
 
-<!-- TOP TABS -->
-<div id="tabs">
-  <div class="tab">Dashboard</div>
-  <div class="tab">System</div>
-  <div class="tab">Logs</div>
+<!-- TOP -->
+<div id="top">
+  <div class="tab">SYSTEM</div>
+  <div class="tab">NETWORK</div>
+  <div class="tab">LOGS</div>
 </div>
 
-<!-- MAIN AREA -->
+<!-- MAIN -->
 <div id="main">
 
-  <!-- LEFT -->
-  <div id="left">
+  <!-- LEFT BOX -->
+  <div class="box" id="left">
+👤 USER PROFILE
+<div class="avatar">?</div>
+STATUS: ACTIVE
 
-    <div id="profile" class="box">
-      👤 PROFILE
-      <div class="avatar">❓</div>
-      <div>Status: ACTIVE</div>
-    </div>
-
-    <div id="terminal" class="box"></div>
-
+---
   </div>
 
-  <!-- MIDDLE -->
-  <div id="middle">
-    <div class="box" id="stats">
-      📊 SYSTEM STATS<br><br>
-    </div>
-  </div>
+  <!-- MIDDLE BOX -->
+  <div class="box" id="middle"></div>
 
-  <!-- RIGHT -->
-  <div id="right">
-    <div class="box" id="logs">
-      ⚙️ LIVE ACTIVITY<br><br>
-    </div>
-  </div>
+  <!-- RIGHT BOX -->
+  <div class="box" id="right"></div>
 
 </div>
 
 <script>
-// TERMINAL (LEFT BOTTOM)
-const terminal = document.getElementById("terminal");
 
-function termLine() {
+// 3 independent terminal streams
+const left = document.getElementById("left");
+const middle = document.getElementById("middle");
+const right = document.getElementById("right");
+
+function randFile() {
   const items = [
     "C:\\System\\file_" + Math.floor(Math.random()*99999),
     "dir /s scanning...",
-    "Loading modules...",
-    "Indexing files...",
-    "Memory check OK",
-    "Kernel running..."
+    "Loading kernel...",
+    "Indexing drive...",
+    "Memory OK",
+    "System check passed"
   ];
   return items[Math.floor(Math.random()*items.length)];
 }
 
-function runTerminal() {
-  terminal.innerHTML += termLine() + "\n";
-  terminal.scrollTop = terminal.scrollHeight;
-  setTimeout(runTerminal, 20);
+// LEFT STREAM
+function runLeft() {
+  left.innerHTML += randFile() + "\n";
+  setTimeout(runLeft, 30);
 }
 
-runTerminal();
-
-
-// MIDDLE STATS
-const stats = document.getElementById("stats");
-
-function updateStats() {
-  stats.innerHTML = `
-📊 SYSTEM STATS<br><br>
-CPU: ${Math.floor(Math.random()*100)}%<br>
-RAM: ${Math.floor(Math.random()*100)}%<br>
-GPU: ${Math.floor(Math.random()*100)}%<br>
-NETWORK: ${Math.floor(Math.random()*1000)} Mbps<br>
-STATUS: STABLE
-`;
+// MIDDLE STREAM (different style)
+function runMiddle() {
+  middle.innerHTML += "[SYS] " + randFile() + "\n";
+  setTimeout(runMiddle, 50);
 }
 
-setInterval(updateStats, 500);
-
-
-// RIGHT LOGS
-const logs = document.getElementById("logs");
-
-function logLine() {
-  const msgs = [
-    "User activity detected",
-    "Background process running",
-    "Syncing data...",
-    "No threats found",
-    "System optimized"
+// RIGHT STREAM (logs style)
+function runRight() {
+  const logs = [
+    "LOG >> process running",
+    "LOG >> syncing data",
+    "LOG >> no errors found",
+    "LOG >> background task active",
+    "LOG >> scan complete"
   ];
 
-  logs.innerHTML += msgs[Math.floor(Math.random()*msgs.length)] + "<br>";
-  logs.scrollTop = logs.scrollHeight;
+  right.innerHTML += logs[Math.floor(Math.random()*logs.length)] + "\n";
+  setTimeout(runRight, 80);
 }
 
-setInterval(logLine, 800);
+runLeft();
+runMiddle();
+runRight();
 
 </script>
 
 </body>
 </html>
-
