@@ -1,125 +1,105 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<style>
-body { 
-    margin: 0; 
-    background: #000; 
-    overflow: hidden; 
-    font-family: 'Courier New', monospace; 
-}
-#matrix {
-    position: fixed;
-    top: 0; left: 0; 
-    width: 100%; height: 100%; 
-    font-size: 13px;
-    color: lime;
-    line-height: 1;
-    white-space: pre;
-}
-.column {
-    position: absolute;
-    animation: fall linear infinite;
-    white-space: pre;
-}
-.char {
-    display: block;
-    opacity: 0.7;
-    animation: glow 1.5s ease-in-out infinite alternate;
-}
-@keyframes fall {
-    0% { transform: translateY(-100vh); }
-    100% { transform: translateY(100vh); }
-}
-@keyframes glow {
-    0% { opacity: 0.4; text-shadow: 0 0 5px lime; }
-    100% { opacity: 1; text-shadow: 0 0 15px lime; }
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>dir /s</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #000;
+            color: lime;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.3;
+            overflow: hidden;
+            height: 100vh;
+        }
+        #terminal {
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            white-space: pre-wrap;
+            animation: scroll-down 0.1s linear infinite;
+        }
+        .prompt {
+            color: #00ff00;
+            animation: blink 0.6s infinite;
+        }
+        .output {
+            color: #00aa00;
+            margin-left: 10px;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.4; }
+        }
+        @keyframes scroll-down {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-1px); }
+        }
+    </style>
 </head>
 <body>
+    <div id="terminal"></div>
 
-<div id="matrix"></div>
+    <script>
+        const terminal = document.getElementById('terminal');
+        let lineCount = 0;
 
-<script>
-const codeSymbols = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_(){}[]+-*/=<>!&|~^%$#@:;,.";
-const keywords = ["def","class","if","for","while","try","import","from","return","print","function","var","let","const","async","await","static","public","private","void","int","float","string","bool","list","array","dict","map","set","get","post","put","delete"];
-
-function randomCodeLine() {
-    const parts = [];
-    const len = 20 + Math.floor(Math.random() * 40);
-    
-    for (let i = 0; i < len; i++) {
-        if (Math.random() < 0.15 && parts.length > 0) {
-            parts.push("()");
-        } else if (Math.random() < 0.12) {
-            parts.push("[]");
-        } else if (Math.random() < 0.1) {
-            parts.push("{}");
-        } else if (Math.random() < 0.08 && i > 5) {
-            parts.push("=");
-        } else if (Math.random() < 0.05) {
-            parts.push(keywords[Math.floor(Math.random() * keywords.length)]);
-        } else {
-            parts.push(codeSymbols[Math.floor(Math.random() * codeSymbols.length)]);
+        function generateDirLine() {
+            const files = [
+                'file' + Math.floor(Math.random() * 10000) + '.txt',
+                'document' + Math.floor(Math.random() * 1000) + '.doc',
+                'backup' + Math.floor(Math.random() * 500) + '.bak',
+                'config' + Math.floor(Math.random() * 100) + '.ini',
+                'data' + Math.floor(Math.random() * 999) + '.dat'
+            ];
+            
+            const size = Math.floor(Math.random() * 9999999);
+            const date = new Date(Date.now() - Math.random() * 1000000000)
+                .toLocaleString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric', 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+            
+            return `${files[Math.floor(Math.random() * files.length)]} ${size.toLocaleString()} ${date}`;
         }
-    }
-    return parts.join("");
-}
 
-function createColumn() {
-    const col = document.createElement('div');
-    col.className = 'column';
-    col.style.left = (Math.random() * 95) + '%';
-    col.style.animationDuration = (5 + Math.random() * 5) + 's';
-    col.style.fontSize = (11 + Math.random() * 4) + 'px';
-    
-    const chars = 30 + Math.floor(Math.random() * 25);
-    for (let i = 0; i < chars; i++) {
-        const ch = document.createElement('span');
-        ch.className = 'char';
-        ch.textContent = randomCodeLine().slice(0, 1 + Math.floor(Math.random() * 3));
-        ch.style.animationDelay = (i * 0.08) + 's';
-        col.appendChild(ch);
-    }
-    
-    document.getElementById('matrix').appendChild(col);
-    
-    setTimeout(() => {
-        if (col.parentNode) {
-            col.parentNode.removeChild(col);
+        function addDirSpam() {
+            // Prompt
+            terminal.innerHTML += `<span class="prompt">C:\\> dir /s</span>\n`;
+            
+            // Directory header
+            terminal.innerHTML += `<span class="output">Directory of C:\\${Math.random().toString(36).substr(2, 4)}</span>\n`;
+            
+            // Multiple file lines
+            for (let i = 0; i < 5 + Math.floor(Math.random() * 8); i++) {
+                terminal.innerHTML += `<span class="output">  ${generateDirLine()}</span>\n`;
+            }
+            
+            // More prompts
+            for (let i = 0; i < 2 + Math.floor(Math.random() * 3); i++) {
+                terminal.innerHTML += `<span class="prompt">C:\\> dir /s</span>\n`;
+            }
+            
+            terminal.scrollTop = terminal.scrollHeight;
         }
-    }, 12000);
-}
 
-// Continuous infinite spawning
-setInterval(createColumn, 80);
-
-// Initial burst for instant effect
-for (let i = 0; i < 30; i++) {
-    setTimeout(createColumn, i * 50);
-}
-
-// Extra fast columns
-setInterval(() => {
-    createColumn();
-}, 120);
-
-// Longer code lines occasionally
-setInterval(() => {
-    const longCol = document.createElement('div');
-    longCol.className = 'column';
-    longCol.style.left = (Math.random() * 95) + '%';
-    longCol.style.animationDuration = '8s';
-    longCol.style.fontSize = '12px';
-    longCol.textContent = randomCodeLine();
-    document.getElementById('matrix').appendChild(longCol);
-    
-    setTimeout(() => {
-        if (longCol.parentNode) longCol.parentNode.removeChild(longCol);
-    }, 8000);
-}, 300);
-</script>
-
+        // Continuous spam - never stops
+        setInterval(addDirSpam, 150);
+        
+        // Initial burst for instant effect
+        for (let i = 0; i < 10; i++) {
+            setTimeout(addDirSpam, i * 100);
+        }
+    </script>
 </body>
 </html>
