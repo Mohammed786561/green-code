@@ -5,54 +5,79 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terminal</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #000;
-            color: #00ff41;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.4;
-            height: 100vh;
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        html, body {
+            height: 100%;
+            width: 100%;
             overflow: hidden;
+            background: #000;
+        }
+        body {
+            color: #00ff41;
+            font-family: 'Courier New', 'Consolas', monospace;
+            font-size: 16px;
+            line-height: 1.3;
+            padding: 0;
         }
         #terminal {
+            width: 100vw;
             height: 100vh;
-            padding: 25px;
+            padding: 40px;
             overflow-y: auto;
+            overflow-x: hidden;
             white-space: pre-wrap;
             background: 
-                radial-gradient(circle at 10% 20%, rgba(0,255,65,0.1) 0%, transparent 40%),
-                radial-gradient(circle at 90% 80%, rgba(0,255,65,0.08) 0%, transparent 40%),
+                radial-gradient(circle at 15% 25%, rgba(0,255,65,0.12) 0%, transparent 35%),
+                radial-gradient(circle at 85% 75%, rgba(0,255,65,0.1) 0%, transparent 35%),
                 #000;
-            box-shadow: inset 0 0 40px rgba(0,255,65,0.15);
-            border: 1px solid #00aa33;
-            position: relative;
+            box-shadow: inset 0 0 60px rgba(0,255,65,0.18);
+            border: 2px solid #00aa33;
+            box-sizing: border-box;
         }
         .prompt {
             color: #00ff41;
-            text-shadow: 0 0 8px #00ff41;
-            animation: cursor 1s step-end infinite;
-        }
-        .output { color: #00cc33; margin-left: 6px; }
-        .header { color: #66ff99; font-weight: bold; }
-        .file { color: #99ffcc; }
-        .size { color: #00ff88; }
-        .time { color: #33ff77; }
-        @keyframes cursor {
-            0%, 50% { border-right: 2px solid #00ff41; }
-            51%, 100% { border-right: none; }
+            text-shadow: 0 0 12px #00ff41;
+            margin-right: 4px;
         }
         .prompt::after {
             content: '_';
-            animation: cursor 0.8s step-end infinite;
+            animation: blink 0.8s step-end infinite;
             margin-left: 2px;
         }
-        @keyframes scan {
-            0% { box-shadow: inset 0 0 40px rgba(0,255,65,0.2); }
-            50% { box-shadow: inset 0 0 60px rgba(0,255,65,0.3); }
-            100% { box-shadow: inset 0 0 40px rgba(0,255,65,0.2); }
+        .output { 
+            color: #00cc33; 
+            margin-left: 12px;
+            word-break: break-all;
         }
-        #terminal { animation: scan 4s ease-in-out infinite; }
+        .header { 
+            color: #66ff99; 
+            font-weight: bold;
+            text-shadow: 0 0 8px #66ff99;
+        }
+        .file { 
+            color: #99ffcc; 
+        }
+        .size { 
+            color: #00ff88; 
+        }
+        .time { 
+            color: #33ff77; 
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: inset 0 0 60px rgba(0,255,65,0.18); }
+            50% { box-shadow: inset 0 0 80px rgba(0,255,65,0.25); }
+        }
+        #terminal {
+            animation: glowPulse 3s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
@@ -61,28 +86,27 @@
     <script>
         const terminal = document.getElementById('terminal');
         const commands = [
-            'dir /s',
-            'ls -la',
-            'tree /f',
-            'find . -name "*.txt"',
-            'dir *.exe /s',
-            'ls -R',
-            'du -sh *'
+            'dir /s', 'dir *.exe /s', 'dir /s /b', 
+            'ls -la', 'ls -R', 'ls *.log',
+            'tree /f', 'tree -d',
+            'find . -name "*.txt"', 'find . -type f',
+            'du -sh *', 'du -h'
         ];
         const prompts = [
-            'C:\\>', 'D:\\data>', 'C:\\Users\\Docs>', 'C:\\Windows\\Sys>', 
-            '/home/>', '/var/log>', 'user@host:~$', 'root@server:~#',
-            'PS C:\\>', 'bash-5.1$'
+            'C:\\Windows\\Sys32>', 'C:\\Users\\Public>', 'C:\\Program Files>', 'D:\\Data>',
+            '/home/user>', '/var/log>', '/etc>', '/tmp>',
+            'PS C:\\>', 'user@desktop:~$', 'root@server:~#',
+            'C:\\> ', 'bash-5.1$ '
         ];
 
         function randomFile() {
-            const exts = ['.txt','.log','.bak','.tmp','.dat','.cfg','.ini','.exe','.dll','.jpg'];
-            const names = ['doc','log','cfg','tmp','bak','data','file','sys','cache','temp'];
-            return `${names[Math.floor(Math.random()*names.length)]}${Math.floor(Math.random()*9999)}${exts[Math.floor(Math.random()*exts.length)]}`;
+            const exts = ['.txt','.log','.bak','.tmp','.dat','.cfg','.ini','.exe','.dll','.sys','.jpg','.png'];
+            const names = ['sys','log','cfg','tmp','bak','data','file','doc','cache','temp','backup','config'];
+            return `${names[Math.floor(Math.random()*names.length)]}${Math.floor(Math.random()*99999)}${exts[Math.floor(Math.random()*exts.length)]}`;
         }
 
         function randomSize() {
-            return (Math.floor(Math.random()*99999999)).toLocaleString();
+            return (Math.floor(Math.random()*999999999)).toLocaleString();
         }
 
         function randomTime() {
@@ -93,50 +117,54 @@
         function generateOutput(cmd) {
             let output = '';
             
+            // Different outputs based on command
             if (cmd.includes('dir') || cmd.includes('ls')) {
-                output += `<span class="header">Directory of .</span>\n`;
-                for (let i = 0; i < 4 + Math.floor(Math.random()*6); i++) {
-                    output += `  <span class="file">${randomFile().padEnd(28)}</span><span class="size">${randomSize().padEnd(12)}</span><span class="time">${randomTime()}</span>\n`;
+                output += `<span class="header">Directory of ${Math.random().toString(36).substr(2,6).toUpperCase()}</span>\n`;
+                const fileCount = 5 + Math.floor(Math.random()*8);
+                for (let i = 0; i < fileCount; i++) {
+                    output += `  <span class="file">${randomFile().padEnd(32)}</span><span class="size">${randomSize().padEnd(14)}</span><span class="time">${randomTime()}</span>\n`;
                 }
-                output += `<span class="output">${Math.floor(Math.random()*30)} files</span>\n\n`;
-            } else if (cmd.includes('tree')) {
+                output += `<span class="output">${fileCount} File(s)  ${randomSize()} bytes</span>\n\n`;
+            } 
+            else if (cmd.includes('tree')) {
                 output += `<span class="header">Folder PATH listing</span>\n`;
-                for (let i = 0; i < 3; i++) {
-                    output += `  ${'│   '.repeat(Math.floor(Math.random()*3))}${Math.random().toString(36).substr(2,8)}\n`;
+                for (let level = 0; level < 4; level++) {
+                    output += `  ${'│   '.repeat(level)}├─${randomFile()}\n`;
                 }
-            } else if (cmd.includes('find') || cmd.includes('du')) {
-                for (let i = 0; i < 5; i++) {
-                    output += `<span class="output">./${randomFile()} ${randomSize()}</span>\n`;
+            }
+            else if (cmd.includes('find') || cmd.includes('du')) {
+                for (let i = 0; i < 6; i++) {
+                    output += `<span class="output">${randomFile()}  ${randomSize()}</span>\n`;
                 }
             }
             
             return output;
         }
 
-        function spamTerminal() {
+        function addLine() {
             const prompt = prompts[Math.floor(Math.random()*prompts.length)];
             const cmd = commands[Math.floor(Math.random()*commands.length)];
             
-            terminal.innerHTML += `<span class="prompt">${prompt} ${cmd}</span>\n`;
+            terminal.innerHTML += `<span class="prompt">${prompt}${cmd}</span>\n`;
             terminal.innerHTML += generateOutput(cmd);
             
+            // Always scroll to bottom
             terminal.scrollTop = terminal.scrollHeight;
         }
 
-        // Varied spam timing for realism
+        // Varied realistic timing
+        let spamInterval = 400;
         function startSpam() {
-            spamTerminal();
-            const nextDelay = 300 + Math.random() * 800;
-            setTimeout(startSpam, nextDelay);
+            addLine();
+            spamInterval = 250 + Math.random() * 600;
+            setTimeout(startSpam, spamInterval);
         }
 
-        // Initial burst
-        for (let i = 0; i < 8; i++) {
-            setTimeout(spamTerminal, i * 250);
+        // Chrome fullscreen burst start
+        for (let i = 0; i < 12; i++) {
+            setTimeout(addLine, i * 180);
         }
-        
-        // Start continuous varied spam
-        setTimeout(startSpam, 2000);
+        setTimeout(startSpam, 2500);
     </script>
 </body>
 </html>
