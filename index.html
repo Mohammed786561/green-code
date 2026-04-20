@@ -2,6 +2,10 @@
 <html>
 <head>
   <title>System Monitor</title>
+
+  <!-- Force desktop layout -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <style>
     body {
       margin: 0;
@@ -11,59 +15,123 @@
       overflow: hidden;
     }
 
-    #terminal {
+    /* Matrix background */
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    /* Two panels */
+    .container {
+      display: flex;
+      height: 100vh;
+      width: 100vw;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel {
+      width: 50%;
       padding: 10px;
+      overflow: hidden;
       white-space: pre-wrap;
       font-size: 14px;
-      height: 100vh;
     }
   </style>
 </head>
 <body>
-  <div id="terminal"></div>
 
-  <script>
-    const terminal = document.getElementById("terminal");
+<canvas id="matrix"></canvas>
 
-    const commands = [
-      "du -sh", "ls -la", "netstat -an", "tasklist",
-      "ping 10.0.0.1", "tracert example.com",
-      "cat /var/log/syslog", "whoami", "ipconfig",
-      "dir *.exe", "ps aux", "top"
-    ];
+<div class="container">
+  <div class="panel" id="left"></div>
+  <div class="panel" id="right"></div>
+</div>
 
-    const words = ["file", "sys", "log", "data", "core", "tmp", "bin", "cfg"];
+<script>
+/* ===== MATRIX BACKGROUND ===== */
+const canvas = document.getElementById("matrix");
+const ctx = canvas.getContext("2d");
 
-    function randomLine() {
-      let cmd = commands[Math.floor(Math.random() * commands.length)];
-      let output = `user@system:~$ ${cmd}\n`;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-      let lines = Math.floor(Math.random() * 6) + 4;
+const letters = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const fontSize = 14;
+const columns = canvas.width / fontSize;
 
-      for (let i = 0; i < lines; i++) {
-        let name = words[Math.floor(Math.random() * words.length)];
-        let ext = words[Math.floor(Math.random() * words.length)];
-        let size = Math.floor(Math.random() * 9000000) + 1000;
-        let cpu = Math.floor(Math.random() * 100);
+const drops = Array(Math.floor(columns)).fill(1);
 
-        output += `${name}${Math.floor(Math.random()*999)}.${ext} ${size} CPU:${cpu}%\n`;
-      }
+function drawMatrix() {
+  ctx.fillStyle = "rgba(0,0,0,0.05)";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      return output;
+  ctx.fillStyle = "#00ff9c";
+  ctx.font = fontSize + "px monospace";
+
+  for (let i = 0; i < drops.length; i++) {
+    const text = letters[Math.floor(Math.random() * letters.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.95) {
+      drops[i] = 0;
     }
+    drops[i]++;
+  }
+}
 
-    function addLine() {
-      terminal.textContent += randomLine();
+setInterval(drawMatrix, 50);
 
-      window.scrollTo(0, document.body.scrollHeight);
+/* ===== TERMINAL PANELS ===== */
+const left = document.getElementById("left");
+const right = document.getElementById("right");
 
-      if (terminal.textContent.length > 20000) {
-        terminal.textContent = terminal.textContent.slice(-10000);
-      }
+const commands1 = ["du -sh", "ls -la", "dir", "find", "scan"];
+const commands2 = ["netstat -an", "tasklist", "ping", "top", "ps aux"];
+
+const words = ["file", "sys", "log", "data", "core", "tmp", "bin", "cfg"];
+
+function randomBlock(commands) {
+  let cmd = commands[Math.floor(Math.random() * commands.length)];
+  let output = `user@system:~$ ${cmd}\n`;
+
+  let lines = Math.floor(Math.random() * 6) + 4;
+
+  for (let i = 0; i < lines; i++) {
+    let name = words[Math.floor(Math.random() * words.length)];
+    let ext = words[Math.floor(Math.random() * words.length)];
+    let size = Math.floor(Math.random() * 9000000);
+    let cpu = Math.floor(Math.random() * 100);
+
+    output += `${name}${Math.floor(Math.random()*999)}.${ext} ${size} CPU:${cpu}%\n`;
+  }
+
+  return output;
+}
+
+function updatePanel(panel, commands, speed) {
+  setInterval(() => {
+    panel.textContent += randomBlock(commands);
+
+    panel.scrollTop = panel.scrollHeight;
+
+    if (panel.textContent.length > 15000) {
+      panel.textContent = panel.textContent.slice(-8000);
     }
+  }, speed);
+}
 
-    setInterval(addLine, 50);
-  </script>
+updatePanel(left, commands1, 60);
+updatePanel(right, commands2, 40);
+
+/* ===== RESIZE FIX ===== */
+window.addEventListener("resize", () => {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+
 </body>
 </html>
-
